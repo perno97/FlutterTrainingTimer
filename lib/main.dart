@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 void main() {
@@ -25,12 +27,61 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  MyTime _time = MyTime(0, 0);
+  static const Duration TICK = Duration(seconds: 1);
 
-  void _play() {
+  MyTime _display = MyTime(0, 0);
+  Duration _currentTime = Duration(seconds: 10);
+  Timer _timer;
+  bool _exercising = true;
+  bool _showingPlay = true;//TODO use animation play/pause AnimatedIcon
+
+  void _buttonPressed() {
+    if(_showingPlay) _play();
+    else _pause();
+  }
+
+  void _play(){
     setState(() {
-      _time.set(1,30);
+      _showingPlay = false;
+      _display.set(_currentTime.inMinutes, _currentTime.inSeconds);
+      _timer = Timer.periodic(TICK, _tick);
     });
+  }
+
+  void _tick(Timer _t) {
+    _currentTime -= TICK;
+    setState(() {
+      _display.set(_currentTime.inMinutes, _currentTime.inSeconds);
+      if(_currentTime.inSeconds < 0) _timerFinished();
+    });
+  }
+
+  void _timerFinished(){
+    _timer.cancel();
+    _currentTime = Duration(seconds: 10);
+    _exercising = !_exercising;
+  }
+
+  void _pause(){
+    _timer.cancel();
+
+    setState(() {
+      _showingPlay = true;
+    });
+  }
+
+  void _stop(){
+    _timer.cancel();
+    _currentTime = Duration(seconds: 10);
+
+    setState(() {
+      _display = MyTime(0, 0);
+      _showingPlay = true;
+    });
+  }
+
+  void _stopTimer(){
+    if(_timer != null) _timer.cancel();
   }
 
   @override
@@ -41,33 +92,54 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              _time.toString(),
+              _display.toString(),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _play,
-        tooltip: 'Increment',
-        child: Icon(Icons.play_circle_filled),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      floatingActionButton: InkWell(
+        splashColor: Colors.black45,
+        onLongPress: () {
+          _stop();
+        },
+        child: FloatingActionButton(
+          child: Icon(Icons.play_arrow),
+          onPressed: _buttonPressed,
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,// This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
 
 class MyTime {
-  int min;
-  int sec;
+  int min, sec;
 
-  MyTime(this.min,this.sec);
+  MyTime(int min, int sec){
+    set(min, sec);
+  }
 
   @override
   String toString() {
-    return "$min:$sec";
+    String seconds;
+    sec < 10 ? seconds = "0$sec" : seconds = "$sec";
+    return "$min:$seconds";
   }
 
-  void set(min,sec){
+  void set(int min, int sec){
+    if(sec >= 60){
+      min += (sec/60) as int;
+      sec = sec%60;
+    }
     this.min = min;
     this.sec = sec;
+  }
+
+  int getMin(){
+    return min;
+  }
+
+  int getSec(){
+    return sec;
   }
 }
