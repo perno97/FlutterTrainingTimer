@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -37,32 +36,46 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
   static const Duration TICK = Duration(seconds: 1);
 
   MyTime _display = MyTime(0, 0);
-  Duration _currentTime = Duration(seconds: 10);
+  MyTime _exerciseTime;
+  MyTime _restTime;
+  Duration _currentTime;
   Timer _timer;
   bool _exercising = true;
   bool _stopped = true;
-  bool _showingPlay = true;//TODO use animation play/pause AnimatedIcon
+  bool _showingPlay = true;
   Color _backgroundColor = Colors.black;
   Color _inputBordersColor = Colors.deepOrange;
   Color _textColor = Colors.white;
+
   Animation<Color> _greenRedAnimation;
   Animation<Color> _blackGreenAnimation;
   Animation<Color> _redBlackAnimation;
   Animation<Color> _orangeGreenAnimation;
   Animation<Color> _greenWhiteAnimation;
-  Animation<Color> _orangeWhiteAnimation;
+  Animation<Color> _redGreenAnimation;
+  Animation<Color> _greenBlackAnimation;
+  Animation<Color> _greenOrangeAnimation;
+  Animation<Color> _whiteGreenAnimation;
+  Animation<Color> _whiteOrangeAnimation;
   Animation<double> _playPauseAnimation;
+
   AnimationController _greenRedController;
+  AnimationController _redGreenController;
   AnimationController _blackGreenController;
+  AnimationController _greenBlackController;
   AnimationController _redBlackController;
   AnimationController _playPauseController;
 
+  final _textExercisingController = TextEditingController();
+  final _textRestingController = TextEditingController();
+  FocusNode _restingFocusNode;
+  FocusNode _exercisingFocusNode;
 
-  @override
-  void initState() {
-    super.initState();
+  void _initAnimations(){
     _greenRedController = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
+    _redGreenController = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     _blackGreenController = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
+    _greenBlackController = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     _redBlackController = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     _playPauseController = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     _greenRedAnimation = ColorTween(begin: Colors.green, end: Colors.red).animate(_greenRedController)..addListener(() {
@@ -70,9 +83,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
         _backgroundColor = _greenRedAnimation.value;
       });
     });
+    _redGreenAnimation = ColorTween(begin: Colors.red, end: Colors.green).animate(_redGreenController)..addListener(() {
+      setState(() {
+        _backgroundColor = _redGreenAnimation.value;
+      });
+    });
     _blackGreenAnimation = ColorTween(begin: Colors.black, end: Colors.green).animate(_blackGreenController)..addListener(() {
       setState(() {
         _backgroundColor = _blackGreenAnimation.value;
+      });
+    });
+    _greenBlackAnimation = ColorTween(begin: Colors.green, end: Colors.black).animate(_greenBlackController)..addListener(() {
+      setState(() {
+        _backgroundColor = _greenBlackAnimation.value;
       });
     });
     _redBlackAnimation = ColorTween(begin: Colors.red, end: Colors.black).animate(_redBlackController)..addListener(() {
@@ -86,26 +109,87 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
         _inputBordersColor = _orangeGreenAnimation.value;
       });
     });
+    _greenOrangeAnimation = ColorTween(begin: Color.fromRGBO(0, 100, 0, 100), end: Colors.deepOrange).animate(_greenBlackController)..addListener(() {
+      setState(() {
+        _inputBordersColor = _greenOrangeAnimation.value;
+      });
+    });
     _greenWhiteAnimation = ColorTween(begin: Color.fromRGBO(0, 100, 0, 100), end: Colors.white).animate(_greenRedController)..addListener(() {
       setState(() {
         _inputBordersColor = _greenWhiteAnimation.value;
       });
     });
-    _orangeWhiteAnimation = ColorTween(begin: Colors.deepOrange, end: Colors.white).animate(_redBlackController)..addListener(() {
+    _whiteGreenAnimation = ColorTween(begin: Colors.white, end: Color.fromRGBO(0, 100, 0, 100)).animate(_redGreenController)..addListener(() {
       setState(() {
-        _inputBordersColor = _orangeWhiteAnimation.value;
+        _inputBordersColor = _whiteGreenAnimation.value;
+      });
+    });
+    _whiteOrangeAnimation = ColorTween(begin: Colors.white, end: Colors.deepOrange).animate(_redBlackController)..addListener(() {
+      setState(() {
+        _inputBordersColor = _whiteOrangeAnimation.value;
       });
     });
 
     _playPauseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_playPauseController);
   }
 
+  void _initFocus(){
+    _restingFocusNode = FocusNode();
+    _exercisingFocusNode = FocusNode();
+    _restingFocusNode.addListener(_handleFocusChange);
+    _exercisingFocusNode.addListener(_handleFocusChange);
+  }
+
+  void _handleFocusChange(){//TODO controllare inserimento posizionale
+    String ex = _textExercisingController.text;
+    String rest = _textRestingController.text;
+    if(ex.length != 0){
+      MyTime exTime = MyTime.stringTime(ex);
+      if(!exTime.isNull())
+        _exerciseTime = exTime;
+      else if(_exerciseTime != null)
+        _textExercisingController.text = _exerciseTime.toDigits();
+    }
+    if(rest.length != 0){
+      MyTime restTime = MyTime.stringTime(rest);
+      if(!restTime.isNull())
+        _restTime = restTime;
+      else if(_restTime != null)
+        _textRestingController.text = _restTime.toDigits();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initAnimations();
+    _initFocus();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _blackGreenController.dispose();
+    _playPauseController.dispose();
+    _greenRedController.dispose();
+    _redBlackController.dispose();
+    _redGreenController.dispose();
+    _greenBlackController.dispose();
+    _textExercisingController.dispose();
+    _textRestingController.dispose();
+  }
+
   void _buttonPressed() {
+    if(_exerciseTime == null || _restTime == null) return;
     if(_showingPlay) {
       _playPauseController.forward();
       _showingPlay = false;
-      if(_stopped)
-        if(_exercising) _blackGreenController.forward();
+      if(_stopped) {
+        _stopped = false;
+        _blackGreenController.reset();
+        _blackGreenController.forward();
+        _currentTime = Duration(minutes: _exerciseTime.getMin(), seconds: _exerciseTime.getSec());
+      }
       _play();
     }
     else {
@@ -132,11 +216,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
 
   void _timerFinished(){
     _timer.cancel();
-    _currentTime = Duration(seconds: 10);
-    _exercising = !_exercising;
     setState(() {
-      _exercising?_greenRedController.reverse():_greenRedController.forward();
+      if(_exercising){
+        _greenRedController.reset();
+        _greenRedController.forward();
+        _currentTime = Duration(minutes: _restTime.getMin(), seconds: _restTime.getSec());
+      }
+      else{
+        _redGreenController.reset();
+        _redGreenController.forward();
+        _currentTime = Duration(minutes: _exerciseTime.getMin(), seconds: _exerciseTime.getSec());
+      }
     });
+    _exercising = !_exercising;
     _play();
   }
 
@@ -145,16 +237,25 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
   }
 
   void _stop(){
+    if(_timer == null || _stopped) return;
+
     _timer.cancel();
+
+    if(_exercising){
+      _greenBlackController.reset();
+      _greenBlackController.forward();
+    }
+    else{
+      _redBlackController.reset();
+      _redBlackController.forward();
+    }
+
     _stopped = true;
-    _exercising?_blackGreenController.reverse():_redBlackController.forward();
-    _currentTime = Duration(seconds: 10);
     _exercising = true;
     if(!_showingPlay) _playPauseController.reverse();
     _showingPlay = true;
-
     setState(() {
-      _display = MyTime(0, 0);
+      _display.set(_exerciseTime.getMin(), _exerciseTime.getSec());
     });
   }
 
@@ -173,20 +274,23 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
                   Expanded(
                     child: TextField(
                       decoration: InputDecoration(
-                          labelText: "Exercise",
-                          labelStyle: TextStyle(color: _textColor),
-                          enabledBorder: OutlineInputBorder(
+                        labelText: "Exercise",
+                        labelStyle: TextStyle(color: _textColor),
+                        enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(color: _inputBordersColor, width: 2.0),
                             borderRadius: BorderRadius.circular(10)
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: _inputBordersColor, width: 2.0),
-                              borderRadius: BorderRadius.circular(10)
-                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: _inputBordersColor, width: 2.0),
+                            borderRadius: BorderRadius.circular(10)
+                        ),
                       ),
-                      keyboardType: TextInputType.number,
+                      controller: _textExercisingController,
+                      focusNode: _exercisingFocusNode,
+                      keyboardType: TextInputType.datetime,
                       inputFormatters: <TextInputFormatter>[
-                        WhitelistingTextInputFormatter.digitsOnly],
+                        WhitelistingTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(4)],
                     ),
                   ),
                   SizedBox(width: 50),
@@ -204,15 +308,23 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
                             borderRadius: BorderRadius.circular(10)
                         ),
                       ),
-                      keyboardType: TextInputType.number,
+                      controller: _textRestingController,
+                      focusNode: _restingFocusNode,
+                      keyboardType: TextInputType.datetime,
                       inputFormatters: <TextInputFormatter>[
-                        WhitelistingTextInputFormatter.digitsOnly],
+                        WhitelistingTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(4)],
                     ),
                   ),
                 ],
               ),
               SizedBox(height: 50),
-              Text(_exercising?"Exercising":"Resting"),
+              Text(
+                  _exercising?"EXERCISING":"RESTING",
+                style: TextStyle(
+                  fontSize: 25,
+                ),
+              ),
               SizedBox(height: 50),
               Text(
                 _display.toString(),
@@ -224,6 +336,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
       ),
       floatingActionButton: InkWell(
         splashColor: Colors.black45,
+        customBorder: CircleBorder(),
         onLongPress: () {
           _stop();
         },
@@ -246,6 +359,18 @@ class MyTime {
 
   MyTime(int min, int sec){
     set(min, sec);
+  }
+
+  MyTime.stringTime(String inputTime){
+    List<String> result = inputTime.split(":");
+    int min=0,sec=0;
+
+    if(result.length >= 1 && result[result.length-1].isNotEmpty)
+      sec = int.parse(result[result.length-1]);
+    if(result.length >= 2 && result[result.length-2].isNotEmpty)
+      min = int.parse(result[result.length-2]);
+
+    set(min,sec);
   }
 
   @override
@@ -273,5 +398,23 @@ class MyTime {
 
   int getSec(){
     return sec;
+  }
+
+  bool isNull(){
+    return min == 0 && sec == 0;
+  }
+
+  String toDigits() {
+    String min,sec;
+    if(this.min > 0) {
+      min = "${this.min}";
+      if(this.sec < 10) sec = "0${this.sec}";
+      else sec = "${this.sec}";
+    }
+    else {
+      min = "";
+      sec = "${this.sec}";
+    }
+    return "$min$sec";
   }
 }
