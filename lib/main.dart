@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
+import 'package:audioplayers/audio_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -34,6 +36,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
   static const Duration TICK = Duration(seconds: 1);
+  static const String ALARM_URL = "https://perno97.altervista.org/alarm.mp3";
 
   MyTime _display = MyTime(0, 0);
   MyTime _exerciseTime;
@@ -70,6 +73,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
   final _textRestingController = TextEditingController();
   FocusNode _restingFocusNode;
   FocusNode _exercisingFocusNode;
+
+  AudioPlayer audioPlayer = AudioPlayer();
+  static AudioCache player = AudioCache();
 
   void _initAnimations(){
     _greenRedController = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
@@ -164,6 +170,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
     super.initState();
     _initAnimations();
     _initFocus();
+    player.load("alarm.mp3");
   }
 
   @override
@@ -188,7 +195,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
         _stopped = false;
         _blackGreenController.reset();
         _blackGreenController.forward();
-        _currentTime = Duration(minutes: _exerciseTime.getMin(), seconds: _exerciseTime.getSec());
+        _currentTime = Duration(seconds: _exerciseTime.getInSeconds());
       }
       _play();
     }
@@ -201,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
 
   void _play(){
     setState(() {
-      _display.set(_currentTime.inMinutes, _currentTime.inSeconds);
+      _display.set(0, _currentTime.inSeconds);
       _timer = Timer.periodic(TICK, _tick);
     });
   }
@@ -210,22 +217,23 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
     _currentTime -= TICK;
     setState(() {
       if(_currentTime.inSeconds < 0) _timerFinished();
-      else _display.set(_currentTime.inMinutes, _currentTime.inSeconds);
+      else _display.set(0, _currentTime.inSeconds);
     });
   }
 
   void _timerFinished(){
     _timer.cancel();
+    _playAlarm();
     setState(() {
       if(_exercising){
         _greenRedController.reset();
         _greenRedController.forward();
-        _currentTime = Duration(minutes: _restTime.getMin(), seconds: _restTime.getSec());
+        _currentTime = Duration(seconds: _restTime.getInSeconds());
       }
       else{
         _redGreenController.reset();
         _redGreenController.forward();
-        _currentTime = Duration(minutes: _exerciseTime.getMin(), seconds: _exerciseTime.getSec());
+        _currentTime = Duration(seconds: _exerciseTime.getInSeconds());
       }
     });
     _exercising = !_exercising;
@@ -257,6 +265,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
     setState(() {
       _display.set(_exerciseTime.getMin(), _exerciseTime.getSec());
     });
+  }
+
+  void _playAlarm(){
+    playLocal();
+  }
+
+  playLocal() async {
+    player.play("alarm.mp3");
   }
 
   @override
@@ -362,14 +378,13 @@ class MyTime {
   }
 
   MyTime.stringTime(String inputTime){
-    List<String> result = inputTime.split(":");
     int min=0,sec=0;
-
-    if(result.length >= 1 && result[result.length-1].isNotEmpty)
-      sec = int.parse(result[result.length-1]);
-    if(result.length >= 2 && result[result.length-2].isNotEmpty)
-      min = int.parse(result[result.length-2]);
-
+    if(inputTime.length > 2) {
+      sec = int.parse(inputTime.substring(inputTime.length-2, inputTime.length));
+      min = int.parse(inputTime.substring(0,inputTime.length-2));
+    }
+    else
+      sec = int.parse(inputTime);
     set(min,sec);
   }
 
@@ -416,5 +431,9 @@ class MyTime {
       sec = "${this.sec}";
     }
     return "$min$sec";
+  }
+
+  getInSeconds() {
+    return this.sec + this.min*60;
   }
 }
