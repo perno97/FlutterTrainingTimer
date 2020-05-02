@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:audioplayers/audio_cache.dart';
+import 'package:wakelock/wakelock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -36,7 +37,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
   static const Duration TICK = Duration(seconds: 1);
-  static const String ALARM_URL = "https://perno97.altervista.org/alarm.mp3";
 
   MyTime _display = MyTime(0, 0);
   MyTime _exerciseTime;
@@ -202,6 +202,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
     else {
       _playPauseController.reverse();
       _showingPlay=true;
+      Wakelock.enable();
       _pause();
     }
   }
@@ -248,6 +249,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
     if(_timer == null || _stopped) return;
 
     _timer.cancel();
+    Wakelock.disable();
 
     if(_exercising){
       _greenBlackController.reset();
@@ -271,7 +273,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
     playLocal();
   }
 
-  playLocal() async {
+  void playLocal() async {
     player.play("alarm.mp3");
   }
 
