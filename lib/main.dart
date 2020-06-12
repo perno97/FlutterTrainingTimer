@@ -46,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
   bool _exercising = true;
   bool _stopped = true;
   bool _showingPlay = true;
-  Color _backgroundColor = Colors.black;
+  Color _backgroundColor = Color.fromRGBO(48, 48, 48, 1);
   Color _inputBordersColor = Colors.deepOrange;
   Color _textColor = Colors.white;
 
@@ -84,27 +84,27 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
     _greenBlackController = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     _redBlackController = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     _playPauseController = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
-    _greenRedAnimation = ColorTween(begin: Colors.green, end: Colors.red).animate(_greenRedController)..addListener(() {
+    _greenRedAnimation = ColorTween(begin: Colors.blue, end: Color.fromRGBO(204, 0, 0, 1)).animate(_greenRedController)..addListener(() {
       setState(() {
         _backgroundColor = _greenRedAnimation.value;
       });
     });
-    _redGreenAnimation = ColorTween(begin: Colors.red, end: Colors.green).animate(_redGreenController)..addListener(() {
+    _redGreenAnimation = ColorTween(begin: Color.fromRGBO(204, 0, 0, 1), end: Colors.blue).animate(_redGreenController)..addListener(() {
       setState(() {
         _backgroundColor = _redGreenAnimation.value;
       });
     });
-    _blackGreenAnimation = ColorTween(begin: Colors.black, end: Colors.green).animate(_blackGreenController)..addListener(() {
+    _blackGreenAnimation = ColorTween(begin: Color.fromRGBO(48, 48, 48, 1), end: Colors.blue).animate(_blackGreenController)..addListener(() {
       setState(() {
         _backgroundColor = _blackGreenAnimation.value;
       });
     });
-    _greenBlackAnimation = ColorTween(begin: Colors.green, end: Colors.black).animate(_greenBlackController)..addListener(() {
+    _greenBlackAnimation = ColorTween(begin: Colors.blue, end: Color.fromRGBO(48, 48, 48, 1)).animate(_greenBlackController)..addListener(() {
       setState(() {
         _backgroundColor = _greenBlackAnimation.value;
       });
     });
-    _redBlackAnimation = ColorTween(begin: Colors.red, end: Colors.black).animate(_redBlackController)..addListener(() {
+    _redBlackAnimation = ColorTween(begin: Color.fromRGBO(204, 0, 0, 1), end: Color.fromRGBO(48, 48, 48, 1)).animate(_redBlackController)..addListener(() {
       setState(() {
         _backgroundColor = _redBlackAnimation.value;
       });
