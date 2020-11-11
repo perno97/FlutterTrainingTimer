@@ -189,6 +189,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
   void _buttonPressed() {
     if(_exerciseTime == null || _restTime == null) return;
     if(_showingPlay) {
+      Wakelock.enable();
       _playPauseController.forward();
       _showingPlay = false;
       if(_stopped) {
@@ -200,9 +201,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
       _play();
     }
     else {
+      Wakelock.disable();
       _playPauseController.reverse();
       _showingPlay=true;
-      Wakelock.enable();
       _pause();
     }
   }
