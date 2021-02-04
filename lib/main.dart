@@ -202,6 +202,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     if (_showingPlay) {
       _playPauseController.forward();
       _showingPlay = false;
+      Wakelock.enable();
       if (_stopped) {
         _stopped = false;
         _blackGreenController.reset();
@@ -212,7 +213,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     } else {
       _playPauseController.reverse();
       _showingPlay = true;
-      Wakelock.enable();
       _pause();
     }
   }
