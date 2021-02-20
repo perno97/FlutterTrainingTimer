@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fluttertrainingtimer/ad_manager.dart';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:audioplayers/audio_cache.dart';
@@ -7,6 +8,7 @@ import 'package:wakelock/wakelock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 
 void main() {
   runApp(MyApp());
@@ -76,6 +78,40 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   AudioPlayer audioPlayer = AudioPlayer();
   static AudioCache player = AudioCache();
+
+  Future<void> _initAdMob() {
+    // TODO: Initialize AdMob SDK
+    return FirebaseAdMob.instance.initialize(appId: AdManager.appId);
+  }
+
+  // TODO: Add _interstitialAd
+  InterstitialAd _interstitialAd;
+
+  // TODO: Add _isInterstitialAdReady
+  bool _isInterstitialAdReady;
+
+  // TODO: Implement _loadInterstitialAd()
+  void _loadInterstitialAd() {
+    _interstitialAd.load();
+  }
+
+  // TODO: Implement _onInterstitialAdEvent()
+  void _onInterstitialAdEvent(MobileAdEvent event) {
+    switch (event) {
+      case MobileAdEvent.loaded:
+        _isInterstitialAdReady = true;
+        break;
+      case MobileAdEvent.failedToLoad:
+        _isInterstitialAdReady = false;
+        print('Failed to load an interstitial ad');
+        break;
+      case MobileAdEvent.closed:
+        _play();
+        break;
+      default:
+      // do nothing
+    }
+  }
 
   void _initAnimations() {
     _greenRedController =
@@ -181,6 +217,21 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _initAnimations();
+
+    _initAdMob();
+
+    // TODO: Initialize _isInterstitialAdReady
+    _isInterstitialAdReady = false;
+
+    // TODO: Initialize _interstitialAd
+    _interstitialAd = InterstitialAd(
+      adUnitId: AdManager.interstitialAdUnitId,
+      listener: _onInterstitialAdEvent,
+    );
+
+    // TODO: Load an Interstitial Ad
+    _loadInterstitialAd();
+
     player.load("alarm.mp3");
   }
 
@@ -195,6 +246,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     _greenBlackController.dispose();
     _textExercisingController.dispose();
     _textRestingController.dispose();
+    _interstitialAd?.dispose();
   }
 
   void _buttonPressed() {
@@ -209,7 +261,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         _blackGreenController.forward();
         _currentTime = Duration(seconds: _exerciseTime.getInSeconds());
       }
-      _play();
+      if(_isInterstitialAdReady){
+        _interstitialAd.show();
+      }
+      else {
+       _play();
+      }
     } else {
       _playPauseController.reverse();
       _showingPlay = true;
@@ -257,6 +314,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   void _stop() {
+    // TODO: Load an Interstitial Ad
+    _isInterstitialAdReady = false;
+    _loadInterstitialAd();
     if (_timer == null || _stopped) return;
 
     _timer.cancel();

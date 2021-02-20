@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "529865014046",
+    "project_id": "flutter-training-timer",
+    "storage_bucket": "flutter-training-timer.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:529865014046:android:98f39100a9911d3df6e70f",
+        "android_client_info": {
+          "package_name": "it.perno97.trainingtimer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "529865014046-4ne3jpotldf31ss6318rbn9a4176g0s8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_0tVuFKqEZMD9kC7jp4qfjqX9FhYert0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "529865014046-4ne3jpotldf31ss6318rbn9a4176g0s8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
