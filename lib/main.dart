@@ -262,7 +262,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         _currentTime = Duration(seconds: _exerciseTime.getInSeconds());
       }
       if(_isInterstitialAdReady){
+        //TODO Show interstitial ad
         _interstitialAd.show();
+        _isInterstitialAdReady = false;
       }
       else {
        _play();
@@ -315,7 +317,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   void _stop() {
     // TODO: Load an Interstitial Ad
-    _isInterstitialAdReady = false;
     _loadInterstitialAd();
     if (_timer == null || _stopped) return;
 
